@@ -9,6 +9,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,18 +21,34 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
   editor: lexicalEditor(),
+  collections: [Users, Media],
   secret: process.env.PAYLOAD_SECRET || '',
-  typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
-  },
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
+
+  typescript: {
+    outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
   sharp,
+
   plugins: [
+    s3Storage({
+      collections: {
+        media: true,
+      },
+      bucket: process.env.AWS_BUCKET_NAME!,
+      config: {
+        region: process.env.AWS_REGION!,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+          sessionToken: process.env.AWS_SESSION_TOKEN!, 
+        },
+      },
+    }),
+
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
   ],
 })
