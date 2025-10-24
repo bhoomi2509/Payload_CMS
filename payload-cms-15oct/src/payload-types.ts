@@ -121,6 +121,10 @@ export interface PayloadUserAuthOperations {
  */
 export interface PayloadUser {
   id: string;
+  /**
+   * User role. Admins can publish/delete; Editors can create/update.
+   */
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -299,6 +303,7 @@ export interface PayloadMigration {
  * via the `definition` "payload-users_select".
  */
 export interface PayloadUsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

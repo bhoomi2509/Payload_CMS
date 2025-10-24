@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, PayloadRequest } from 'payload'
 import { TextBlock } from '../blocks/Text'
 import { HeroBlock } from '../blocks/Hero'
 import { CTABlock } from '../blocks/CTA'
@@ -10,6 +10,9 @@ export const Pages: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: ({ req }: { req: PayloadRequest }) => Boolean(req?.user && ((req.user as any).role === 'admin' || (req.user as any).role === 'editor')),
+    update: ({ req }: { req: PayloadRequest }) => Boolean(req?.user && ((req.user as any).role === 'admin' || (req.user as any).role === 'editor')),
+    delete: ({ req }: { req: PayloadRequest }) => Boolean(req?.user && (req.user as any).role === 'admin'),
   },
   fields: [
     {
@@ -46,6 +49,11 @@ export const Pages: CollectionConfig = {
       admin: {
         position: 'sidebar',
       },
+      access: {
+        // Only admins can set or change status (controls publishing)
+        create: ({ req }: { req: PayloadRequest }) => Boolean(req?.user && (req.user as any).role === 'admin'),
+        update: ({ req }: { req: PayloadRequest }) => Boolean(req?.user && (req.user as any).role === 'admin'),
+      },
     },
     {
       name: 'blocks',
@@ -54,3 +62,4 @@ export const Pages: CollectionConfig = {
     },
   ],
 }
+

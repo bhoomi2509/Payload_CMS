@@ -52,4 +52,28 @@ export default buildConfig({
 
     payloadCloudPlugin(),
   ],
+  onInit: async (payload) => {
+    try {
+      // Use literal slug with a cast to satisfy CollectionSlug type
+      const existing = await payload.find({ collection: 'payload-users' as any, limit: 1, depth: 0 })
+      if ((existing?.totalDocs || 0) === 0) {
+        const email = process.env.ADMIN_EMAIL
+        const password = process.env.ADMIN_PASSWORD
+        if (email && password) {
+          await payload.create({
+            collection: 'payload-users' as any,
+            data: { email, password, role: 'admin' },
+            overrideAccess: true, // bypass field access to set role on first user
+          })
+          payload.logger.info(`Seeded initial admin user: ${email}`)
+        } else {
+          payload.logger.warn('No ADMIN_EMAIL/ADMIN_PASSWORD provided; cannot seed initial admin user.')
+        }
+      }
+    } catch (e) {
+      // do not crash app on seed failure
+      payload.logger.error(`Admin seed failed: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  },
 })
+
